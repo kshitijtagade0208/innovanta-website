@@ -96,22 +96,22 @@ export default function EventPage() {
           {/* ═══════════════════════════════════════════════════════
               HERO — BREW & BUILD
           ═══════════════════════════════════════════════════════ */}
-          <div className="text-center pt-4 sm:pt-8 pb-12 sm:pb-16 max-w-3xl mx-auto">
+          <div className="min-h-[calc(100vh-10rem)] flex flex-col justify-center items-center text-center pt-2 sm:pt-4 pb-12 sm:pb-16 max-w-4xl mx-auto">
             {/* Expressive handwritten eyebrow */}
             <Reveal>
-              <div className="mb-3">
+              <div className="mb-4">
                 <span className="font-caveat text-2xl sm:text-3xl text-[#68452F]">
                   an innovanta gathering
                 </span>
               </div>
             </Reveal>
 
-            {/* Main Title: # BREW & BUILD */}
-            <Reveal delay={80}>
-              <h1 className="font-mono font-black text-5xl sm:text-7xl md:text-8xl lg:text-9xl uppercase tracking-[0.08em] text-[#38271F] leading-[0.9]">
-                BREW
-                <span className="text-[#C58B45]">&nbsp;&&nbsp;</span>
-                BUILD
+            {/* Main Title: # BREW & BUILD — Perfectly balanced at 50% horizontal center */}
+            <Reveal delay={80} className="w-full">
+              <h1 className="font-mono font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl uppercase tracking-[0.06em] sm:tracking-[0.08em] text-[#38271F] leading-[0.9] flex items-center justify-center w-full">
+                <span className="flex-1 text-right">BREW</span>
+                <span className="text-[#C58B45] px-2 sm:px-4 md:px-6 shrink-0 text-center">&</span>
+                <span className="flex-1 text-left">BUILD</span>
               </h1>
             </Reveal>
 

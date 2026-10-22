@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from './Logo';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'HOME', href: '/' },
@@ -16,6 +17,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { currentUser, isAuthenticated, isMounted, logout } = useAuth();
 
   const isHome = pathname === '/';
 
@@ -43,6 +45,16 @@ export function Navbar() {
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
+
+  // Helper for initials
+  const initials = currentUser?.name
+    ? currentUser.name
+        .split(' ')
+        .map((p) => p[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : 'U';
 
   return (
     <>
@@ -100,7 +112,65 @@ export function Navbar() {
             })}
           </nav>
 
-
+          {/* Desktop Auth / Profile Actions (Right Side) */}
+          <div className="hidden md:flex items-center space-x-3">
+            {isMounted && (
+              <>
+                {isAuthenticated && currentUser ? (
+                  <Link
+                    href="/profile"
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold tracking-[0.18em] transition-all duration-300 ${
+                      pathname === '/profile'
+                        ? 'border-[#C87D32] bg-[#C87D32]/10 text-[#C87D32]'
+                        : isHome && !scrolled
+                        ? 'border-white/20 bg-white/10 text-white hover:border-[#C87D32] hover:bg-white/15'
+                        : 'border-[#E8E3D9] bg-[#F5F2EB]/80 text-[#2C1E16] hover:border-[#C87D32] hover:bg-[#F5F2EB]'
+                    }`}
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white font-bold"
+                      style={{ backgroundColor: currentUser.avatarColor || '#C87D32' }}
+                    >
+                      {initials}
+                    </span>
+                    <span>PROFILE</span>
+                  </Link>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <Link
+                      href="/login"
+                      className={`text-xs font-mono font-bold tracking-[0.22em] transition-colors py-1 ${
+                        pathname === '/login'
+                          ? 'text-[#C87D32]'
+                          : isHome && !scrolled
+                          ? 'text-[#E8E3D9] hover:text-white'
+                          : 'text-[#5C493E] hover:text-[#2C1E16]'
+                      }`}
+                    >
+                      LOG IN
+                    </Link>
+                    <span
+                      className={`h-3 w-px ${
+                        isHome && !scrolled ? 'bg-white/20' : 'bg-[#E8E3D9]'
+                      }`}
+                    />
+                    <Link
+                      href="/signup"
+                      className={`text-xs font-mono font-bold tracking-[0.2em] px-3.5 py-1.5 rounded-full border transition-all duration-200 ${
+                        pathname === '/signup'
+                          ? 'bg-[#C87D32] text-white border-[#C87D32]'
+                          : isHome && !scrolled
+                          ? 'border-white/30 text-white hover:bg-white/10'
+                          : 'border-[#2C1E16]/20 text-[#2C1E16] hover:border-[#C87D32] hover:bg-[#F5F2EB]'
+                      }`}
+                    >
+                      SIGN UP
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Mobile Hamburger Button */}
           <div className="flex md:hidden">
@@ -125,7 +195,7 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Drawer Menu: Exactly 3 items (HOME | EVENT | ABOUT) */}
+      {/* Mobile Drawer Menu: Navigation + Account */}
       {mobileMenuOpen && (
         <div
           role="dialog"
@@ -164,7 +234,72 @@ export function Navbar() {
               })}
             </nav>
 
-            <div className="pt-6 border-t border-[#E8E3D9] text-center">
+            {/* Mobile Auth / Profile Section */}
+            {isMounted && (
+              <div className="pt-2 border-t border-[#E8E3D9]">
+                {isAuthenticated && currentUser ? (
+                  <div className="bg-[#F5F2EB] border border-[#E8E3D9] rounded-2xl p-4 flex flex-col space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-xs"
+                        style={{ backgroundColor: currentUser.avatarColor || '#C87D32' }}
+                      >
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-mono text-sm font-bold text-[#2C1E16] truncate">
+                          {currentUser.name}
+                        </p>
+                        <p className="text-xs text-[#68452F] truncate">
+                          {currentUser.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Link
+                        href="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#2C1E16] text-[#FAF8F5] font-mono text-xs font-bold tracking-wider hover:bg-[#38271F]"
+                      >
+                        <UserIcon className="w-3.5 h-3.5" />
+                        <span>PROFILE</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-[#CBB79D] text-[#68452F] font-mono text-xs font-bold tracking-wider hover:bg-[#EFE5D6]"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>LOG OUT</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center py-3 rounded-xl border border-[#E8E3D9] bg-[#F5F2EB] font-mono text-xs font-bold tracking-[0.2em] text-[#2C1E16] hover:border-[#C87D32]"
+                    >
+                      LOG IN
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center py-3 rounded-xl bg-[#C87D32] text-white font-mono text-xs font-bold tracking-[0.2em] hover:bg-[#B36E28]"
+                    >
+                      SIGN UP
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-[#E8E3D9] text-center">
               <span className="font-caveat text-xl text-[#3A4D39]">
                 an arena of craft & intentional architecture
               </span>
